@@ -10,13 +10,14 @@ import pandas as pd
 
 INPUTFILE = '../data/total_storage.csv'
 
+# read input data
 def read_data(path):
     data = pd.read_csv(path)
     data['date'] = pd.to_datetime(data['date'])
     
     return data
 
-# calculate active storage (initial state-current state)*100/initial state and total active storage and time to equilibrium
+# calculate active storage (initial state-current state) * 100 / initial state and total active storage and time to equilibrium
 def calc_active_storage(data):
     df_AS = pd.DataFrame()
     df_AS['date'] = data['date']
@@ -39,7 +40,7 @@ def extr_features(df_AS, AS, TtE):
 
     td = df_AS.loc[~df_AS.isnull().any(axis=1)].iloc[-1]['date'] - df_AS.iloc[0,0]
     Tn = td.total_seconds()
-    df_Feature['1st_Gradient'] = np.array(((df_AS.loc[~df_AS.isnull().any(axis=1)].iloc[-1][1:]) / \ Tn).astype(np.float)) # delta AS at nan / delta Time
+    df_Feature['1st_Gradient'] = np.array(((df_AS.loc[~df_AS.isnull().any(axis=1)].iloc[-1][1:]) / Tn).astype(np.float)) # delta AS at nan / delta Time
 
     df_Feature['Active_Storage'] = AS # active storage
     df_Feature['Time_to_Equilibrium'] = TtE # time to equilibrium
@@ -62,7 +63,7 @@ def extr_features(df_AS, AS, TtE):
 def norm_features(df_Feature):
     df_Feat_Norm = pd.DataFrame()
     for i in range(df_Feature.shape[1]):
-        df_Feat_Norm[df_Feature.columns[i]] = (df_Feature.iloc[:, i] - df_Feature.iloc[:,i].mean()) / \ df_Feature.iloc[:, i].std()
+        df_Feat_Norm[df_Feature.columns[i]] = (df_Feature.iloc[:, i] - df_Feature.iloc[:,i].mean()) / df_Feature.iloc[:, i].std()
     
     return df_Feat_Norm
 
@@ -74,11 +75,12 @@ def calc_correlation(df_Feat_Norm):
 
 # filter features
 def filt_features(df_Feat_Norm, df_Corr_pearson):
-    high_corr = df_Corr_pearson[df_Corr_pearson.mask(np.triu(np.ones(df_Corr_pearson.shape)).astype(bool)) >= \ 0.9].dropna(axis=1, thresh=1).columns.tolist()
+    high_corr = df_Corr_pearson[df_Corr_pearson.mask(np.triu(np.ones(df_Corr_pearson.shape)).astype(bool)) >= 0.9].dropna(axis=1, thresh=1).columns.tolist()
     df_Feat_Norm = df_Feat_Norm.drop(high_corr, axis=1)
     
     return df_Feat_Norm
 
+# main
 if __name__ == '__main__':
     data = read_data(INPUTFILE)
     df_AS, AS, TtE = calc_active_storage(data)
