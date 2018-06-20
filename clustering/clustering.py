@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 __author__ = 'Elnaz Azmi'
 __email__ = 'elnaz.azmi@kit.edu'
@@ -7,10 +6,9 @@ __status__ = 'Development'
 import numpy as np
 import pandas as pd
 import random
-from dim_reduction import df_AS, df_Feat_Norm
-
-
-INPUTCOMPTIME = '../data/hillslopes_computation_time.csv'
+from sklearn import metrics
+from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN
 
 # read hillslopes computation time
 def read_data(path):
@@ -198,10 +196,3 @@ def apply_kmedoids(df_AS, df_Feat_Norm):
     df_RmseSum_Kmedoids = pd.DataFrame({'rmse_sum':np.sqrt(np.square(df_rmse).sum()), 'ctime':arr_ctime})
     
     return df_RmseSum_Kmedoids
-    
-# main
-if __name__ == '__main__':
-    df_HS_runtime = read_data(INPUTCOMPTIME)
-    df_RmseSum_Kmeans = apply_kmeans(df_AS, df_Feat_Norm)
-    df_RmseSum_DBSCAN = apply_DBSCAN(df_AS, df_Feat_Norm)
-    df_RmseSum_Kmedoids = apply_kmedoids(df_AS, df_Feat_Norm)
