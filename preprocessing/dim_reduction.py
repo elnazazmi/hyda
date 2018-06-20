@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 __author__ = 'Elnaz Azmi'
 __email__ = 'elnaz.azmi@kit.edu'
@@ -6,9 +5,6 @@ __status__ = 'Development'
 
 import numpy as np
 import pandas as pd
-
-
-INPUTFILE = '../data/total_storage.csv'
 
 # read input data
 def read_data(path):
@@ -79,12 +75,3 @@ def filt_features(df_Feat_Norm, df_Corr_pearson):
     df_Feat_Norm = df_Feat_Norm.drop(high_corr, axis=1)
     
     return df_Feat_Norm
-
-# main
-if __name__ == '__main__':
-    data = read_data(INPUTFILE)
-    df_AS, AS, TtE = calc_active_storage(data)
-    df_Feature = extr_features(df_AS, AS, TtE)
-    df_Feat_Norm = norm_features(df_Feature)
-    df_Corr_pearson = calc_correlation(df_Feat_Norm)
-    df_Feat_Norm = filt_features(df_Feat_Norm, df_Corr_pearson)
