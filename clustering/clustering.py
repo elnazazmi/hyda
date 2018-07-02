@@ -6,9 +6,11 @@ __status__ = 'Development'
 import numpy as np
 import pandas as pd
 import random
+import math
 from sklearn import metrics
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
+from progress.bar import Bar
 
 # read hillslopes computation time
 def read_data(path):
@@ -18,13 +20,14 @@ def read_data(path):
     return df_HS_runtime
 
 # apply K-means
-def apply_kmeans(df_AS, df_Feat_Norm):
+def apply_kmeans(df_AS, df_Feat_Norm, df_HS_runtime):
     df_rmse = pd.DataFrame()
     arr_ctime = np.empty([0])
     df_fillnan = df_AS.fillna(method='ffill')
-    n_hs = df_Feat_Norm.shape[0]+1
+    nr_itter = df_Feat_Norm.shape[0]+1
+    bar = Bar('K-Means processing', max=nr_itter-1)
 
-    for i in range(1, n_hs): 
+    for i in range(1, nr_itter):
         mydata = pd.DataFrame()
         mydata = df_Feat_Norm.copy()
         
@@ -54,8 +57,10 @@ def apply_kmeans(df_AS, df_Feat_Norm):
         rmse_ = rmse_.sort_index()
         df_rmse[str(i)] = rmse_['rmse']
         arr_ctime = np.append(arr_ctime, ctime)
+        bar.next()
         
     df_RmseSum_Kmeans = pd.DataFrame({'rmse_sum':np.sqrt(np.square(df_rmse).sum()), 'ctime':arr_ctime})
+    bar.finish()
     
     return df_RmseSum_Kmeans
 
@@ -63,7 +68,9 @@ def apply_kmeans(df_AS, df_Feat_Norm):
 def apply_DBSCAN(df_AS, df_Feat_Norm):
     df_fillnan = df_AS.fillna(method='ffill')
     df_rmsesum = pd.DataFrame()
-
+    nr_itter = np.arange(0.1, 2.4, 0.2).shape[0]
+    bar = Bar('DBSCAN processing', max=nr_itter)
+    
     for e in np.arange(0.1, 2.4, 0.2):
         df_rmse = pd.DataFrame()
         arr_ctime = np.empty(shape=[0, 1])
@@ -107,7 +114,9 @@ def apply_DBSCAN(df_AS, df_Feat_Norm):
             df_RmseSum_DBSCAN= df_RmseSum_DBSCAN.append({'rmse_sum':np.sqrt(np.square(df_rmse).sum())[count], 'ctime':arr_ctime[count], 'epsilon':e, 'min_samp':i,
                                             'nr_cls':nr_cls, 'silhouettecoef':metrics.silhouette_score(mydata, pred)}, ignore_index=True)
             count +=1
-
+        bar.next()
+    bar.finish()
+    
     return df_RmseSum_DBSCAN
 
 # K-medoids clustering
@@ -162,9 +171,10 @@ def apply_kmedoids(df_AS, df_Feat_Norm):
     df_rmse = pd.DataFrame()
     arr_ctime = np.empty([0])
     df_fillnan = df_AS.fillna(method='ffill')
-    n_hs = 81
-
-    for i in range(2, n_hs): 
+    nr_itter = 81
+    bar = Bar('K-Medoids processing', max=nr_itter-1)
+    
+    for i in range(2, nr_itter): 
         mydata = pd.DataFrame()
         mydata = df_Feat_Norm.copy()
         n_clusters = i
@@ -192,7 +202,21 @@ def apply_kmedoids(df_AS, df_Feat_Norm):
         rmse_ = rmse_.sort_index()
         df_rmse[str(i)] = rmse_['rmse']
         arr_ctime = np.append(arr_ctime, ctime)
+        bar.next()
         
     df_RmseSum_Kmedoids = pd.DataFrame({'rmse_sum':np.sqrt(np.square(df_rmse).sum()), 'ctime':arr_ctime})
+    bar.finish()
     
     return df_RmseSum_Kmedoids
+
+# min max normalization of rmse and ctime
+def norm_rmse_ctime(df_RmseSum, df_HS_runtime):
+    df_Norm_Clust = pd.DataFrame()
+    df_Norm_Clust['ctime'] = (df_RmseSum['ctime'] - df_RmseSum['ctime'].min()) / (df_HS_runtime['C_Time'].sum() - df_RmseSum['ctime'].min())
+    df_Norm_Clust['rmse_sum'] = (df_RmseSum['rmse_sum'] - 0.000000) / (df_RmseSum['rmse_sum'].max() - 0.000000)
+    if 'nr_cls'in df_RmseSum.columns:
+        df_Norm_Clust['nr_cls'] = df_Norm_Clust['nr_cls']
+    else:
+        df_Norm_Clust['nr_cls'] = np.float64(df_Norm_Clust.index.values)
+    
+    return df_Norm_Clust
