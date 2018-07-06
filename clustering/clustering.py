@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import random
 import math
+from scipy.spatial.distance import cdist
 from sklearn import metrics
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
@@ -65,9 +66,9 @@ def apply_kmeans(df_AS, df_Feat_Norm, df_HS_runtime):
     return df_RmseSum_Kmeans
 
 # apply DBSCAN
-def apply_DBSCAN(df_AS, df_Feat_Norm):
+def apply_DBSCAN(df_AS, df_Feat_Norm, df_HS_runtime):
     df_fillnan = df_AS.fillna(method='ffill')
-    df_rmsesum = pd.DataFrame()
+    df_RmseSum_DBSCAN = pd.DataFrame()
     nr_itter = np.arange(0.1, 2.4, 0.2).shape[0]
     bar = Bar('DBSCAN processing', max=nr_itter)
     
@@ -115,14 +116,15 @@ def apply_DBSCAN(df_AS, df_Feat_Norm):
                                             'nr_cls':nr_cls, 'silhouettecoef':metrics.silhouette_score(mydata, pred)}, ignore_index=True)
             count +=1
         bar.next()
+
     bar.finish()
     
     return df_RmseSum_DBSCAN
 
 # K-medoids clustering
 def cluster(distances, k=3):
-
-    m = distances.shape[0] # number of points
+    # number of points
+    m = distances.shape[0]
 
     # Pick k random medoids.
     curr_medoids = np.array([-1]*k)
@@ -162,7 +164,7 @@ def compute_new_medoid(cluster, distances):
     return costs.argmin(axis=0, fill_value=10e9)
 
 # apply K-medoids
-def apply_kmedoids(df_AS, df_Feat_Norm):
+def apply_kmedoids(df_AS, df_Feat_Norm, df_HS_runtime):
     mydata = pd.DataFrame()
     mydata = df_Feat_Norm.copy()
     df_dist = pd.DataFrame(metrics.pairwise.euclidean_distances(mydata), index=mydata.index.values, columns=mydata.index.values)
@@ -213,10 +215,31 @@ def apply_kmedoids(df_AS, df_Feat_Norm):
 def norm_rmse_ctime(df_RmseSum, df_HS_runtime):
     df_Norm_Clust = pd.DataFrame()
     df_Norm_Clust['ctime'] = (df_RmseSum['ctime'] - df_RmseSum['ctime'].min()) / (df_HS_runtime['C_Time'].sum() - df_RmseSum['ctime'].min())
-    df_Norm_Clust['rmse_sum'] = (df_RmseSum['rmse_sum'] - 0.000000) / (df_RmseSum['rmse_sum'].max() - 0.000000)
+    df_Norm_Clust['rmse_sum'] = (df_RmseSum['rmse_sum'] - 0.00) / (df_RmseSum['rmse_sum'].max() - 0.00)
     if 'nr_cls'in df_RmseSum.columns:
-        df_Norm_Clust['nr_cls'] = df_Norm_Clust['nr_cls']
+        df_Norm_Clust['nr_cls'] = df_RmseSum['nr_cls']
     else:
-        df_Norm_Clust['nr_cls'] = np.float64(df_Norm_Clust.index.values)
-    
+        df_Norm_Clust['nr_cls'] = np.float64(df_RmseSum.index.values)
+                
+    df_Norm_Clust = df_Norm_Clust.drop_duplicates(keep='first')
+    df_Norm_Clust = df_Norm_Clust.sort_values(by='nr_cls')
+
     return df_Norm_Clust
+
+# apply Elbow method for K-means
+def apply_elbow(df_Feat_Norm):
+    meandistortions = []
+    nr_itter = df_Feat_Norm.shape[0]+1
+    bar = Bar('Elbow processing', max=nr_itter-1)
+
+    for i in range(1, nr_itter):
+        mydata = pd.DataFrame()
+        mydata = df_Feat_Norm.copy()
+        kmeans = KMeans(init='k-means++', n_clusters=i, n_init=20, max_iter=600)
+        kmeans.fit(mydata)
+        meandistortions.append(sum(np.min(cdist(mydata, kmeans.cluster_centers_, 'euclidean'), axis=1))/mydata.shape[0])
+        bar.next()
+        
+    bar.finish()
+    
+    return meandistortions
