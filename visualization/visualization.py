@@ -197,8 +197,8 @@ def plot_methods(df_RmseSum_Kmeans, df_RmseSum_DBSCAN, df_RmseSum_Kmedoids, outp
     fig, ax = plt.subplots(figsize=(13,8))
 
     df_rmsesum_kmeans = df_RmseSum_Kmeans[['ctime', 'rmse_sum']].drop_duplicates(keep='first')
-    df_rmsesum_kmedoids = df_RmseSum_Kmeans[['ctime', 'rmse_sum']].drop_duplicates(keep='first')
-    df_rmsesum_dbscan = df_RmseSum_Kmeans[['ctime', 'rmse_sum']].drop_duplicates(keep='first')
+    df_rmsesum_kmedoids = df_RmseSum_Kmedoids[['ctime', 'rmse_sum']].drop_duplicates(keep='first')
+    df_rmsesum_dbscan = df_RmseSum_DBSCAN[['ctime', 'rmse_sum']].drop_duplicates(keep='first')
 
     df_rmsesum_kmeans['ctime'] = df_rmsesum_kmeans['ctime']/(24 * 3600)
     df_rmsesum_kmedoids['ctime'] = df_rmsesum_kmedoids['ctime']/(24 * 3600)
