@@ -217,7 +217,7 @@ def plot_methods(df_RmseSum_Kmeans, df_RmseSum_DBSCAN, df_RmseSum_Kmedoids, outp
     ax.xaxis.set_tick_params(labelsize=22)
     ax.yaxis.set_tick_params(labelsize=22)
     ax.set_xlabel('Computation Time (days)', fontsize=22, labelpad=20)
-    ax.set_ylabel('RMSE (m³)', fontsize=22, labelpad=20)
+    ax.set_ylabel('RMSE', fontsize=22, labelpad=20)
 
     ax.legend(numpoints=1, loc='upper center', bbox_to_anchor=(0.8, 0.95), ncol=1, fancybox=True, shadow=False, fontsize=22)
 
