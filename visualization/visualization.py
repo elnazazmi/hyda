@@ -28,11 +28,14 @@ def plot_timeseries(data, outputname):
     n = data.shape[1]
     fig, ax = plt.subplots(figsize=(12,8))
 
-    color=iter(cm.rainbow(np.linspace(0,1,n)))
+    # color=iter(cm.rainbow(np.linspace(0,1,n)))
+    copa = pd.read_csv(OUTPUTPATH + 'color_palette.csv', header=None)
+    color = tuple([tuple(copa.iloc[row]) for row in range(copa.shape[0])])
     bar = Bar('Visualizing', max=n-1)
-    
+
     for i in range(1, n):
-        c=next(color)
+        # c = next(color)
+        c = color[i-1] 
         ax.plot(data['date'], data.iloc[:, i], color=c, linewidth=2)
         bar.next()
     bar.finish()
