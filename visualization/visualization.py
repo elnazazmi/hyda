@@ -3,6 +3,7 @@ __author__ = 'Elnaz Azmi'
 __email__ = 'elnaz.azmi@kit.edu'
 __status__ = 'Development'
 
+import os
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -19,7 +20,7 @@ from matplotlib.pyplot import text
 from mpl_toolkits.mplot3d import Axes3D
 from progress.bar import Bar
 
-OUTPUTPATH = 'data/'
+OUTPUTPATH = os.path.join(os.path.dirname(__file__), '../data/')
 
 def plot_timeseries(data, outputname):
     months = mdates.MonthLocator()

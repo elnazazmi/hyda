@@ -3,13 +3,14 @@ __author__ = 'Elnaz Azmi'
 __email__ = 'elnaz.azmi@kit.edu'
 __status__ = 'Development'
 
+import os
 import preprocessing.dim_reduction as predim
 import clustering.clustering as clusclus
 import visualization.visualization as visvis
 
-INPUTFILE = 'data/total_storage.csv'
-INPUTCOMPTIME = 'data/hillslopes_computation_time.csv'
-OUTPUTPATH = 'data/'
+INPUTFILE = os.path.join(os.path.dirname(__file__), 'data/total_storage.csv')
+INPUTCOMPTIME = os.path.join(os.path.dirname(__file__), 'data/hillslopes_computation_time.csv')
+OUTPUTPATH = os.path.join(os.path.dirname(__file__), 'data/')
 
 if __name__ == '__main__':
     print('Reading the input data ...')

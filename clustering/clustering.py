@@ -127,10 +127,13 @@ def cluster(distances, k=3):
     m = distances.shape[0]
 
     # Pick k random medoids.
-    curr_medoids = np.array([-1]*k)
-    while not len(np.unique(curr_medoids)) == k:
-        curr_medoids = np.array([random.randint(0, m - 1) for _ in range(k)])
-    old_medoids = np.array([-1]*k) # Doesn't matter what we initialize these to.
+    # curr_medoids = np.array([-1]*k)
+    # while not len(np.unique(curr_medoids)) == k:
+       # curr_medoids = np.array([random.randint(0, m - 1) for _ in range(k)])
+    curr_medoids = np.arange(m)
+    np.random.shuffle(curr_medoids)
+    curr_medoids = curr_medoids[:k]
+    old_medoids = np.array([-1]*k) # Doesn't matter what we initialize these to.    
     new_medoids = np.array([-1]*k)
    
     # Until the medoids stop updating, do the following:
@@ -173,10 +176,10 @@ def apply_kmedoids(df_AS, df_Feat_Norm, df_HS_runtime):
     df_rmse = pd.DataFrame()
     arr_ctime = np.empty([0])
     df_fillnan = df_AS.fillna(method='ffill')
-    nr_itter = 81
+    nr_itter = df_Feat_Norm.shape[0]+1
     bar = Bar('K-Medoids processing', max=nr_itter-1)
     
-    for i in range(2, nr_itter): 
+    for i in range(2, nr_itter):
         mydata = pd.DataFrame()
         mydata = df_Feat_Norm.copy()
         n_clusters = i
