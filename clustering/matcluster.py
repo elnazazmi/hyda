@@ -29,16 +29,47 @@ def mat_kmeans(df_AS, df_Feat_Norm, df_HS_runtime, k, outputname):
         df_dist = pd.DataFrame(metrics.pairwise.euclidean_distances(mydata[pred == j], mydata[pred == j]), index=mydata[pred == j].index.values, columns=mydata[pred == j].index.values)
         reptiv = df_dist.sum().idxmin()
 
-        represent = represent.append({'representitive':reptiv, 'label':j}, ignore_index=True)   
+        represent = represent.append({'representative':reptiv, 'label':j}, ignore_index=True)
         
     # save hillslope groups as csv file
     mydata['pred'] = pred
     for r in np.unique(pred):
-        mydata.loc[mydata['pred'] == r,'rep'] = represent.loc[represent['label'] == r, 'representitive'].values[0]
+        mydata.loc[mydata['pred'] == r,'rep'] = represent.loc[represent['label'] == r, 'representative'].values[0]
         
-    mydata[['pred', 'rep']].to_csv(OUTPUTPATH + outputname + str(k) + '.csv', header=['label', 'representitive'])
+    mydata[['pred', 'rep']].to_csv(OUTPUTPATH + outputname + str(k) + '.csv', header=['label', 'representative'])
     represent.to_csv(OUTPUTPATH + outputname + str(k) + 'rep.csv', index=False, header=True)
     
     mydata_dict = mydata[['pred', 'rep']].to_dict()
     
-    return [mydata['rep'].tolist(), represent['representitive'].tolist(), mydata_dict]
+    return [mydata['rep'].tolist(), represent['representative'].tolist(), mydata_dict]
+
+# calculate RMSE
+def mat_rmse(o_path, c_path, df_HS_runtime):
+
+    arr_ctime = np.empty([0])
+    output_all = pd.read_csv(c_path + 'output_all_.csv')
+    output_all = output_all.fillna(0)
+
+    # map representatives outputs into all hillslopes
+    for k in range(1, 3):
+        ctime = 0.0
+        clust_data = pd.read_csv(c_path + 'mat_kmeans' + str(k) + '.csv')
+        clust_data.columns = ['hsname', 'label', 'rep']
+        output_data = pd.read_csv(o_path + 'output_' + str(k) + '/output_all_.csv')
+        output_mapped = pd.read_csv(c_path + 'output_names.csv')
+
+        for i in np.unique(clust_data['rep']):
+            for j in clust_data.loc[clust_data['rep'] == i, 'hsname']:
+                for m in range(3):
+                    output_mapped[output_mapped.columns[output_mapped.columns.str.contains(j)][m]] = output_data[output_data.columns[output_data.columns.str.contains(i)][m]]
+            ctime = ctime + float(df_HS_runtime['C_Time'][df_HS_runtime.index.values == i])
+
+        # calculate RMSE
+        rmse = math.sqrt(metrics.mean_squared_error(output_all, output_mapped))
+        arr_ctime = np.append(arr_ctime, ctime)
+
+        output_mapped.to_csv(c_path + 'mapped_out' + str(k) + '.csv', index=False, header=True, float_format='%.6f')
+
+    df_RmseSum_Kmeans = pd.DataFrame({'rmse_sum': rmse, 'ctime': arr_ctime})
+
+    return df_RmseSum_Kmeans
