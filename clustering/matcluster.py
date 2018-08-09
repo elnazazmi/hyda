@@ -44,14 +44,14 @@ def mat_kmeans(df_AS, df_Feat_Norm, df_HS_runtime, k, outputname):
     return [mydata['rep'].tolist(), represent['representative'].tolist(), mydata_dict]
 
 # calculate RMSE
-def mat_rmse(o_path, c_path, df_HS_runtime):
+def mat_rmse(o_path, c_path, df_HS_runtime, out_count):
 
     arr_ctime = np.empty([0])
     output_all = pd.read_csv(c_path + 'output_all_.csv')
     output_all = output_all.fillna(0)
 
     # map representatives outputs into all hillslopes
-    for k in range(1, 3):
+    for k in range(1, out_count):
         ctime = 0.0
         clust_data = pd.read_csv(c_path + 'mat_kmeans' + str(k) + '.csv')
         clust_data.columns = ['hsname', 'label', 'rep']
