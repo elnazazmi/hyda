@@ -46,6 +46,7 @@ def mat_kmeans(df_AS, df_Feat_Norm, df_HS_runtime, k, outputname):
 # calculate RMSE
 def mat_rmse(o_path, c_path, df_HS_runtime, out_count):
 
+    df_rmse = pd.DataFrame()
     arr_ctime = np.empty([0])
     output_all = pd.read_csv(c_path + 'output_all_.csv')
     output_all = output_all.fillna(0)
@@ -53,6 +54,7 @@ def mat_rmse(o_path, c_path, df_HS_runtime, out_count):
     # map representatives outputs into all hillslopes
     for k in range(1, out_count):
         ctime = 0.0
+        rmse_ = pd.DataFrame()
         clust_data = pd.read_csv(c_path + 'mat_kmeans' + str(k) + '.csv')
         clust_data.columns = ['hsname', 'label', 'rep']
         output_data = pd.read_csv(o_path + 'output_' + str(k) + '/output_all_.csv')
@@ -65,11 +67,15 @@ def mat_rmse(o_path, c_path, df_HS_runtime, out_count):
             ctime = ctime + float(df_HS_runtime['C_Time'][df_HS_runtime.index.values == i])
 
         # calculate RMSE
-        rmse = math.sqrt(metrics.mean_squared_error(output_all, output_mapped))
+        for n in output_all.columns:
+            rmse = math.sqrt(metrics.mean_squared_error(output_all[n], output_mapped[n]))
+            rmse_ = rmse_.append({'outname': n, 'rmse': rmse}, ignore_index=True)
+
+        df_rmse[str(k)] = rmse_['rmse']
         arr_ctime = np.append(arr_ctime, ctime)
 
         output_mapped.to_csv(c_path + 'mapped_out' + str(k) + '.csv', index=False, header=True, float_format='%.6f')
 
-    df_RmseSum_Kmeans = pd.DataFrame({'rmse_sum': rmse, 'ctime': arr_ctime})
+    df_RmseSum_Kmeans = pd.DataFrame({'rmse_sum': np.sqrt(np.square(df_rmse).sum()), 'ctime': arr_ctime})
 
     return df_RmseSum_Kmeans
