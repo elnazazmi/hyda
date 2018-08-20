@@ -58,6 +58,7 @@ def mat_rmse(o_path, c_path, df_HS_runtime, out_count):
         clust_data = pd.read_csv(c_path + 'mat_kmeans' + str(k) + '.csv')
         clust_data.columns = ['hsname', 'label', 'rep']
         output_data = pd.read_csv(o_path + 'output_' + str(k) + '/output_all_.csv')
+        output_data = output_data.fillna(0)
         output_mapped = pd.read_csv(c_path + 'output_names.csv')
 
         for i in np.unique(clust_data['rep']):
