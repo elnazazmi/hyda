@@ -57,14 +57,15 @@ def mat_rmse(o_path, c_path, df_HS_runtime, out_count):
         rmse_ = pd.DataFrame()
         clust_data = pd.read_csv(c_path + 'mat_kmeans' + str(k) + '.csv')
         clust_data.columns = ['hsname', 'label', 'rep']
-        output_data = pd.read_csv(o_path + 'output_' + str(k) + '/output_all_.csv')
-        output_data = output_data.fillna(0)
+        # output_data = pd.read_csv(o_path + 'output_' + str(k) + '/output_all_.csv')
+        # output_data = output_data.fillna(0)
         output_mapped = pd.read_csv(c_path + 'output_names.csv')
 
         for i in np.unique(clust_data['rep']):
             for j in clust_data.loc[clust_data['rep'] == i, 'hsname']:
                 for m in range(3):
-                    output_mapped[output_mapped.columns[output_mapped.columns.str.contains(j)][m]] = output_data[output_data.columns[output_data.columns.str.contains(i)][m]]
+                    # output_mapped[output_mapped.columns[output_mapped.columns.str.contains(j)][m]] = output_data[output_data.columns[output_data.columns.str.contains(i)][m]]
+                    output_mapped[output_mapped.columns[output_mapped.columns.str.contains(j)][m]] = output_all[ output_all.columns[output_all.columns.str.contains(i)][m]]
             ctime = ctime + float(df_HS_runtime['C_Time'][df_HS_runtime.index.values == i])
 
         # calculate RMSE
@@ -78,5 +79,6 @@ def mat_rmse(o_path, c_path, df_HS_runtime, out_count):
         output_mapped.to_csv(c_path + 'mapped_out' + str(k) + '.csv', index=False, header=True, float_format='%.6f')
 
     df_RmseSum_Kmeans = pd.DataFrame({'rmse_sum': np.sqrt(np.square(df_rmse).sum()), 'ctime': arr_ctime})
+    df_RmseSum_Kmeans.to_csv(c_path + 'rmsesum.csv', index=False, header=True, float_format='%.6f')
 
     return df_RmseSum_Kmeans
