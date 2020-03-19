@@ -15,12 +15,12 @@ from sklearn.cluster import KMeans
 OUTPUTPATH = os.path.join(os.path.dirname(__file__), '../data/')
     
 # apply K-means
-def mat_kmeans(df_AS, df_Feat_Norm, df_HS_runtime, k, outputname):
+def mat_kmeans(df_Feat_Norm, k, outputname, init='k-means++'):
 
     mydata = pd.DataFrame()
     mydata = df_Feat_Norm.copy()
     
-    kmeans = KMeans(init='k-means++', n_clusters=k, n_init=20, max_iter=600).fit(mydata)
+    kmeans = KMeans(init=init, n_clusters=k, n_init=10, max_iter=300, random_state=0).fit(mydata)
     pred = kmeans.labels_
    
     represent = pd.DataFrame()
@@ -36,12 +36,13 @@ def mat_kmeans(df_AS, df_Feat_Norm, df_HS_runtime, k, outputname):
     for r in np.unique(pred):
         mydata.loc[mydata['pred'] == r,'rep'] = represent.loc[represent['label'] == r, 'representative'].values[0]
         
-    mydata[['pred', 'rep']].to_csv(OUTPUTPATH + outputname + str(k) + '.csv', header=['label', 'representative'])
-    represent.to_csv(OUTPUTPATH + outputname + str(k) + 'rep.csv', index=False, header=True)
+    # mydata[['pred', 'rep']].to_csv(OUTPUTPATH + outputname + str(k) + '.csv', header=['label', 'representative'])
+    # represent.to_csv(OUTPUTPATH + outputname + str(k) + 'rep.csv', index=False, header=True)
     
     mydata_dict = mydata[['pred', 'rep']].to_dict()
+    mydata_list = [mydata.index.values.tolist()] + [mydata['rep'].tolist()] + [mydata['pred'].tolist()]
     
-    return [mydata['rep'].tolist(), represent['representative'].tolist(), mydata_dict]
+    return [mydata_list, represent['representative'].tolist(), mydata_dict, kmeans.cluster_centers_]
 
 # calculate RMSE
 def mat_rmse(o_path, c_path, df_HS_runtime, out_count):
