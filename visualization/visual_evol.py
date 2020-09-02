@@ -15,8 +15,8 @@ from bokeh.models import Legend, BasicTickFormatter
 from bokeh.plotting import figure
 
 # outlet visualization
-def outlet_vis(df, forcing, out_name, y_range=(0.008, 0.023), extra_y_range=0.14):
-    df = df / 5  # scale m³/5min to m³/min
+def outlet_vis(df, forcing, out_name, scale=5, y_range=(0.008, 0.023), extra_y_range=0.14):
+    df = df / scale  # scale m³/5min to m³/min
     date = df.index.values
     color = itertools.cycle(palette['Category10'][10])
 
@@ -39,7 +39,7 @@ def outlet_vis(df, forcing, out_name, y_range=(0.008, 0.023), extra_y_range=0.14
 
     df_forcing = pd.DataFrame(forcing[0: date.shape[0]], columns=['forcing'])
     df_forcing = df_forcing.set_index(date)
-    df_forcing = df_forcing / 5  # scale mm/5min to mm/min
+    df_forcing = df_forcing / scale  # scale mm/5min to mm/min
 
     # Setting the second axis range name and range
     p.extra_y_ranges = {"foo": Range1d(start=extra_y_range, end=0.0)}

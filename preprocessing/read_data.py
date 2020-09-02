@@ -7,6 +7,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy.io import loadmat
+import netCDF4
 
 # find input matlab files
 def find_matfiles(path, suffix='.mat'):
@@ -84,3 +85,21 @@ def df_outlet(path, datetime_start='01.01.2015 00:00:00'):
     df_outlet = df_outlet.set_index(pd.to_datetime(date))
     
     return df_outlet
+
+# read netcdf file
+def read_nc(file):
+    nf = netCDF4.Dataset(file, 'r')
+
+    return nf
+
+# read variales from netcdf file
+def read_varnc(nc_file, var_name, hight):
+    ncells = len(nc_file.variables[var_name][0][hight][:])
+    ntimesteps = len(nc_file.variables[var_name])
+    datetime = pd.date_range('05.11.2013 00:00:00', periods=len(nc_file.variables['time']), freq='12MIN')
+    var_data = pd.DataFrame(columns=[str(i) for i in range(ncells)])
+    for i in range(ntimesteps):
+        var_data.loc[i] = nc_file.variables[var_name][i][hight][:].data
+    var_data = var_data.set_index(datetime)
+
+    return var_data

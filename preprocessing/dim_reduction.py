@@ -75,3 +75,14 @@ def filt_features(df_Feat_Norm, df_Corr_pearson):
     df_Feat_Norm = df_Feat_Norm.drop(high_corr, axis=1)
     
     return df_Feat_Norm
+
+
+# extract features
+def extr_feat(df):
+    df_Feature = pd.DataFrame()
+    df_Feature['Mean'] = df.mean()  # mean - moment1
+    df_Feature['Variance'] = df.var()  # variance - moment2
+    df_Feature['Skewness'] = df.skew()  # measure of the asymmetry  - moment3
+    df_Feature['Kurtosis'] = df.kurtosis()  # descriptor of the shape - moment4
+
+    return df_Feature

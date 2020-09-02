@@ -1,11 +1,16 @@
+
+__author__ = 'Elnaz Azmi'
+__email__ = 'elnaz.azmi@kit.edu'
+__status__ = 'Development'
+
 import os
 import math
 import numpy as np
 import pandas as pd
 import numpy.matlib
-import hyda.preprocessing.dim_reduction as predim
-import hyda.clustering.clustering as clusclus
-import hyda.clustering.matcluster as clusmat
+import preprocessing.dim_reduction as predim
+import clustering.clustering as clusclus
+import clustering.matcluster as clusmat
 from sklearn import metrics
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -148,13 +153,16 @@ def apply_elbow(features):
     md = pd.DataFrame(columns=['nr_cls', 'dist'])
     nr_itter = int((features.shape[0] + 1))
 
-    for i in range(1, nr_itter, 5):
+    for i in [1, 5, 10, 20, 30, 40, 50, 20479]:   # range(1, nr_itter, 5):
         mydata = pd.DataFrame()
         mydata = features.copy()
-        kmeans = KMeans(init='k-means++', n_clusters=i, n_init=10, max_iter=300, random_state=0).fit(mydata)
-        md = md.append({'nr_cls':i, 'dist':sum(np.min(cdist(mydata, kmeans.cluster_centers_,
+        if i != 20479:
+            kmeans = KMeans(init='k-means++', n_clusters=i, n_init=10, max_iter=300, random_state=0).fit(mydata)
+            md = md.append({'nr_cls':i, 'dist':sum(np.min(cdist(mydata, kmeans.cluster_centers_,
                                                                                       'euclidean'), axis=1))/mydata.shape[0]}, 
                                        ignore_index=True, sort=False)    
+        else:
+            md = md.append({'nr_cls':i, 'dist':0.0000}, ignore_index=True, sort=False)
         
     f1 = interp1d(md['nr_cls'], md['dist'], kind='cubic')
     xnew = list(range(1, int(md.iloc[-1, 0] + 1)))
